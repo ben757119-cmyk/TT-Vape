@@ -1,0 +1,32 @@
+name: Build
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - name: Build
+        run: chmod +x gradlew && ./gradlew build --no-daemon
+      - name: Upload JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: ttvape-jar
+          path: build/libs/*.jar
+      - name: Release
+        if: github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.0
+          name: TT Vape v1.0.0
+          files: build/libs/ttvape-*.jar
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
